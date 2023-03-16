@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  go:
+    container_name: go
+    build:
+      context: ./go
+      dockerfile: ./config/Dockerfile
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - type: bind
+        source: ./go/app
+        target: /go/src/app
+
+  mongo:
+    container_name: mongo
+    image: mongo:5.0.6-focal
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=sample
+      - TZ=Asia/Tokyo
+    ports:
+      - 27017:27017
+    volumes:
+      - type: bind
+        source: ./mongo/docker-entrypoint-initdb.d
+        target: /docker-entrypoint-initdb.d
+      - type: volume
+        source: mongo
+        target: /data/db
+        volume:
+          nocopy: true
+      - type: volume
+        source: mongo
+        target: /data/configdb
+        volume:
+          nocopy: true
+volumes:
+  mongo:
